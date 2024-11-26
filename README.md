@@ -1,45 +1,32 @@
-# Amnezia headless manual
+# Amnezia headless installation manual
 
-## Obtain amezia vpn config
+## Set up amnezia vpn config
 
 ```sh
 mkdir ~/.config/amnezia
 mv awg.conf ~/.config/amnezia
 
-cat ~/.config/amnezia/awg.conf | grep -ve '^\(J\|S\|H\)' > ~/.config/amnezia/awg-fix.conf
-
 chmod 600 ~/.config/amnezia/awg.conf
-chmod 600 ~/.config/amnezia/awg-fix.conf
 ```
 
-## Install wireguard
+## Install wire-guard dependencies
 
 ### Ubuntu
 
 ```sh
 sudo apt update
-sudo apt install wireguard-tools resolvconf
-
-
+sudo apt install resolvconf
 ```
 
-### Any linux
+## Install wire-guard
+
+From the `$HOME` directory:
 
 ```sh
 git clone https://github.com/amnezia-vpn/amneziawg-tools.git
 cd amneziawg-tools/src
 make
 sudo make install  # installs awg and awg-quick commands
-
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.23.3.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-
-git clone https://github.com/amnezia-vpn/amneziawg-go.git
-cd amneziawg-go
-make
-sudo make install
-
-sudo amneziawg-go awg
 ```
 
 ## Check your ip address before turning on vpn
@@ -48,20 +35,46 @@ sudo amneziawg-go awg
 curl ipconfig.me
 ```
 
-## Start vpn
+## Turn on vpn
 
 ```sh
-sudo wg-quick up ~/.config/amnezia/awg.conf
+sudo awg-quick up ~/.config/amnezia/awg.conf
 ```
 
 ## Check vpn status
 
 ```sh
-sudo wg
+sudo awg
 ```
 
 ## Check your ip address after turning on vpn
 
 ```sh
 curl ipconfig.me
+```
+
+## Install kernel module build dependencies
+
+### Ubuntu
+
+```sh
+sudo apt update
+sudo apt install gcc-12
+```
+
+## Install kernel module
+
+From the `$HOME` directory:
+
+```sh
+git clone https://github.com/amnezia-vpn/amneziawg-linux-kernel-module.git
+cd amneziawg-linux-kernel-module/src
+
+uname -r  # get kernel version, outputs something like '6.8.0-49-generic'
+wget https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-6.8.1.tar.xz
+tar -xJvf linux-6.8.1.tar.xz -C /usr/src
+
+ln -s /usr/src/linux-6.8.1 kernel
+make
+sudo make install
 ```
